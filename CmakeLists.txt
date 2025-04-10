@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.14)
+project(BowlingGame)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Include header files
+include_directories(inc)
+
+# Add source files
+file(GLOB SOURCES "src/*.cpp")
+
+# Define the executable
+add_executable(BowlingGame ${SOURCES})
