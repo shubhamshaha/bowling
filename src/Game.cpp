@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Frame.h"
 #include "ScoreCalculator.h"
+#include "Exceptions.h"
 #include <iostream>
 #include <limits>
 
@@ -14,34 +15,32 @@ void Game::start() {
 void Game::registerPlayers() {
     int playerCount = 0;
     while (playerCount < 4) {
-        std::string name;
-        std::cout << "Enter name for Player " << (playerCount + 1) << ": ";
-        std::getline(std::cin, name);
+        try {
+            std::string name;
+            std::cout << "Enter name for Player " << (playerCount + 1) << ": ";
+            std::getline(std::cin, name);
 
-        if (name.empty()) {
-            std::cout << "Name cannot be empty. Try again.\n";
-            continue;
-        }
-
-        bool duplicate = false;
-        for (const auto& p : players) {
-            if (p->getName() == name) {
-                std::cout << "Duplicate name not allowed.\n";
-                duplicate = true;
-                break;
+            if (name.empty()) {
+                throw InvalidInputException("Name cannot be empty. Try again.");
             }
-        }
 
-        if (!duplicate) {
+            for (const auto& p : players) {
+                if (p->getName() == name) {
+                    throw DuplicatePlayerException("Duplicate name not allowed.");
+                }
+            }
+
             players.push_back(std::make_shared<Player>(name));
             ++playerCount;
-        }
 
-        if (playerCount < 4) {
-            std::string more;
-            std::cout << "Add another player? (y/n): ";
-            std::getline(std::cin, more);
-            if (more != "y" && more != "Y") break;
+            if (playerCount < 4) {
+                std::string more;
+                std::cout << "Add another player? (y/n): ";
+                std::getline(std::cin, more);
+                if (more != "y" && more != "Y") break;
+            }
+        } catch (const BowlingException& e) {
+            std::cout << "Error: " << e.what() << "\n";
         }
     }
 }
@@ -89,34 +88,29 @@ void Game::playFrame(std::shared_ptr<Player> player, int frameNumber) {
 }
 
 int Game::getValidatedScore(int maxPinsRemaining, std::shared_ptr<Player> player, int rollIndex, bool isTenthFrame) {
-    int score = -1;
     while (true) {
-        std::cout << "Enter pins knocked down (0–" << maxPinsRemaining << "): ";
-        std::string input;
-        std::getline(std::cin, input);
-
         try {
-            score = std::stoi(input);
+            std::cout << "Enter pins knocked down (0–" << maxPinsRemaining << "): ";
+            std::string input;
+            std::getline(std::cin, input);
+
+            int score = std::stoi(input);
+            if (score < 0 || score > maxPinsRemaining) {
+                throw InvalidInputException("Score must be between 0 and " + std::to_string(maxPinsRemaining) + ".");
+            }
+
+            std::string confirm;
+            std::cout << "You entered: " << score << ". Confirm? (y to confirm, anything else to re-enter): ";
+            std::getline(std::cin, confirm);
+            if (confirm == "y" || confirm == "Y") {
+                return score;
+            }
+        } catch (const InvalidInputException& e) {
+            std::cout << "Error: " << e.what() << "\n";
         } catch (...) {
-            std::cout << "Invalid number. Try again.\n";
-            continue;
-        }
-
-        if (score < 0 || score > maxPinsRemaining) {
-            std::cout << "Score must be between 0 and " << maxPinsRemaining << ".\n";
-        } else {
-            break;
+            std::cout << "Invalid input. Please try again.\n";
         }
     }
-
-    std::string confirm;
-    std::cout << "You entered: " << score << ". Confirm? (y to confirm, anything else to re-enter): ";
-    std::getline(std::cin, confirm);
-    if (confirm != "y" && confirm != "Y") {
-        return getValidatedScore(maxPinsRemaining, player, rollIndex, isTenthFrame);
-    }
-
-    return score;
 }
 
 void Game::printScores() const {

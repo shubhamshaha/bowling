@@ -8,11 +8,11 @@
 class Game {
 public:
     void start();
+    void registerPlayers(); // Moved to public for testing purposes
 
 private:
     std::vector<std::shared_ptr<Player>> players;
 
-    void registerPlayers();
     void playGame();
     void playFrame(std::shared_ptr<Player> player, int frameNumber);
     int getValidatedScore(int maxPinsRemaining, std::shared_ptr<Player> player, int rollIndex, bool isTenthFrame);

@@ -1,0 +1,38 @@
+@startuml
+class Game {
+    - players : vector<shared_ptr<Player>>
+    + start() : void
+    + registerPlayers() : void
+    + playGame() : void
+    + playFrame(player : shared_ptr<Player>, frameNumber : int) : void
+}
+
+class Player {
+    - name : string
+    - frames : vector<shared_ptr<Frame>>
+    + Player(name : string)
+    + getName() : string
+    + addFrame(frame : shared_ptr<Frame>) : void
+    + getFrames() : const vector<shared_ptr<Frame>>&
+}
+
+class Frame {
+    - rolls : vector<int>
+    - tenthFrame : bool
+    + Frame(isTenthFrame : bool = false)
+    + addRoll(pins : int) : void
+    + getRoll(index : int) : int
+    + isStrike() : bool
+    + isSpare() : bool
+    + isComplete() : bool
+    + isTenth() : bool
+}
+
+class ScoreCalculator {
+    + calculateTotalScore(player : const Player&) : int
+}
+
+Game "1" *-- "1..4" Player
+Player "1" *-- "1..10" Frame
+ScoreCalculator ..> Player
+@enduml

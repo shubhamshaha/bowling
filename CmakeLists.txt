@@ -7,7 +7,15 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(inc)
 
 # Add source files
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/*.cpp" "inc/*.h")
 
-# Define the executable
+# Define the main executable
 add_executable(BowlingGame ${SOURCES})
+
+# Option to build unit tests
+option(BUILD_TESTS "Build unit tests" OFF)
+
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
